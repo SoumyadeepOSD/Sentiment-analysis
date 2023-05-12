@@ -1,5 +1,6 @@
 import pandas as pd
 import matplotlib.pyplot as plt
+import nltk
 df = pd.read_csv('moviesdata.csv')
 df.head()
 df["sentiment"].value_counts()
@@ -28,6 +29,7 @@ model.add(Dropout(0.2))
 model.add(Dense(1, activation='sigmoid'))
 model.compile(loss='binary_crossentropy',optimizer='adam', metrics=['accuracy'])
 from nltk.sentiment import SentimentIntensityAnalyzer
+nltk.download('vader_lexicon')
 sia = SentimentIntensityAnalyzer()
 print(model.summary())
 # history = model.fit(padded_sequence,sentiment_label[0],validation_split=0.2, epochs=5, batch_size=32)
