@@ -1,44 +1,38 @@
 import pandas as pd
 import matplotlib.pyplot as plt
 import nltk
+import pickle
+from tensorflow.keras.preprocessing.text import Tokenizer
+from tensorflow.keras.preprocessing.sequence import pad_sequences
+from tensorflow.keras.models import Sequential
+from tensorflow.keras.layers import LSTM,Dense, Dropout, SpatialDropout1D
+from tensorflow.keras.layers import Embedding
+from nltk.sentiment import SentimentIntensityAnalyzer
+import streamlit as st
+
+
 df = pd.read_csv('moviesdata.csv')
 df.head()
 df["sentiment"].value_counts()
 sentiment_label = df.sentiment.factorize()
 tweet = df.review.values
-from tensorflow.keras.preprocessing.text import Tokenizer
-
 tokenizer = Tokenizer(num_words=5000)
-
 tokenizer.fit_on_texts(tweet)
 encoded_docs = tokenizer.texts_to_sequences(tweet)
-from tensorflow.keras.preprocessing.sequence import pad_sequences
-
 padded_sequence = pad_sequences(encoded_docs, maxlen=200)
-from tensorflow.keras.models import Sequential
-from tensorflow.keras.layers import LSTM,Dense, Dropout, SpatialDropout1D
-from tensorflow.keras.layers import Embedding
-
-
 embedding_vector_length = 32
 model = Sequential()
-model.add(Embedding(99273, embedding_vector_length, input_length=200))
+model.add(Embedding(99274, embedding_vector_length, input_length=200))
 model.add(SpatialDropout1D(0.25))
 model.add(LSTM(50, dropout=0.5, recurrent_dropout=0.5))
 model.add(Dropout(0.2))
 model.add(Dense(1, activation='sigmoid'))
 model.compile(loss='binary_crossentropy',optimizer='adam', metrics=['accuracy'])
-from nltk.sentiment import SentimentIntensityAnalyzer
 nltk.download('vader_lexicon')
 sia = SentimentIntensityAnalyzer()
 print(model.summary())
-# history = model.fit(padded_sequence,sentiment_label[0],validation_split=0.2, epochs=5, batch_size=32)
-import pickle
-# with open('model_pickle_movie', 'wb') as f:
-#     pickle.dump(model, f)
 with open('model_pickle_movie', 'rb') as f:
     mp = pickle.load(f)
-
 def predict_sentiment(text):
     tw = tokenizer.texts_to_sequences([text])
     tw = pad_sequences(tw,maxlen=200)
@@ -79,11 +73,8 @@ def predict_sentiment(text):
 # test_sentence5 = "This is an unexpected worst movie"
 # predict_sentiment(test_sentence5)
 
-import streamlit as st
+
 st.title(":blue[Sentiment analysis app]")
-
-
-
 test_sentence3 = st.text_input('Enter the text')
 if st.button('Done'):
     predict_sentiment(test_sentence3)
